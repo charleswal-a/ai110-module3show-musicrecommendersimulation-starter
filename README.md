@@ -57,6 +57,24 @@ data/songs.csv
      Output: top-k [(Song, score, explanation), ...]
 ```
 
+## Algorithm Recipe
+
+Components: 
+- Genre match: Score of 1.0 if genres match and 0.0 otherwise.
+- Mood match: Score of 1.0 if moods match and 0.0 otherwise.
+- Energy closeness: Compute $1 - abs(song.energy - user.target_energy)$, so a song exactly at the user's target energy scores 1.0
+- Acousticness match: Convert acoutsticness to a boolean based on value and compare to user's likes_acoutsticness
+
+Combination: Multiply each component by its weight and sum to final score between 0 and 1.
+- Weights: genre 0.35, energy 0.30, mood 0.25, acousticness 0.10
+
+Selection: Rank all songs by score descending and return the top k results.
+- Tie breaker: Use valence to decide the order if two songs are close to each other in score.
+
+Possible biases:
+- Genre Matching: Genres like "indie pop" and "pop" are treated as completely unrelated even though they are adjacent.
+- Mood Matching: The mood data entry can be subjective as some users could interpret songs as having different moods than they are listed as.
+
 ---
 
 ## Getting Started
