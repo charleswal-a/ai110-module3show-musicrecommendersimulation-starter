@@ -11,23 +11,51 @@ Your goal is to:
 - Evaluate what your system gets right and wrong
 - Reflect on how this mirrors real world AI recommenders
 
-Replace this paragraph with your own summary of what your version does.
+This version is a simple content-based music recommender. Each song in the catalog (`data/songs.csv`) is described by a set of audio and tag features — genre, mood, energy, tempo, valence, danceability, and acousticness. A `UserProfile` captures a listener's taste as a favorite genre, favorite mood, target energy level, and a preference for acoustic sound. The `Recommender` scores every song by comparing it to the user's profile, then returns the top-k highest-scoring songs along with an explanation of why each one was picked.
 
 ---
 
 ## How The System Works
 
-Explain your design in plain language.
+- The values that will be used from the Song data include genre, mood, energy, and acousticness as primary signals, with valence held as a tie-breaker.
+- The information that UserProfile stores includes favorite_genre, favorite_mood, target_energy, and likes_acoustics.
+- The Recommender will calculate a score for each song by first comparing song to the UserProfile in four different categories (genre, mood, energy, and acousticness). Each category will be assigned a weight and the final score will be the sum of the four categories.
+- The song recommended song will be determined by first scoring every song in the catalog against the UserProfile. The songs are then sorted descending by score and the top k songs are returned. Valence will be used as a tie breaker if two scores are really close to each other.
 
-Some prompts to answer:
+### Data Flow
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
-
-You can include a simple diagram or bullet list if helpful.
+```
+data/songs.csv
+      │  load_songs()
+      ▼
+ List[Song]                    UserProfile
+      │                             │
+      └───────────────┬────────────┘
+                       ▼
+          Recommender.recommend(user, k)
+                       │
+                       │  for each Song:
+                       ▼
+              score_song(user, song)
+                       │
+                       ▼
+        (score, [reasons]) per song ── weighted sum of:
+                                        genre match, mood match,
+                                        energy closeness, acousticness match
+                                        (valence breaks near-ties)
+                       │
+                       ▼
+        sort all songs by score, descending
+                       │
+                       ▼
+              take top k songs
+                       │
+                       ▼
+     explain_recommendation(user, song) per result
+                       │
+                       ▼
+     Output: top-k [(Song, score, explanation), ...]
+```
 
 ---
 
