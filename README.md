@@ -20,7 +20,7 @@ This version is a simple content-based music recommender. Each song in the catal
 - The values that will be used from the Song data include genre, mood, energy, and acousticness as primary signals, with valence held as a tie-breaker.
 - The information that UserProfile stores includes favorite_genre, favorite_mood, target_energy, and likes_acoustics.
 - The Recommender will calculate a score for each song by first comparing song to the UserProfile in four different categories (genre, mood, energy, and acousticness). Each category will be assigned a weight and the final score will be the sum of the four categories.
-- The song recommended song will be determined by first scoring every song in the catalog against the UserProfile. The songs are then sorted descending by score and the top k songs are returned. Valence will be used as a tie breaker if two scores are really close to each other.
+- The song recommended song will be determined by first scoring every song in the catalog against the UserProfile. The songs are then sorted descending by score and the top k songs are returned.
 
 ### Data Flow
 
@@ -62,14 +62,13 @@ data/songs.csv
 Components: 
 - Genre match: Score of 1.0 if genres match and 0.0 otherwise.
 - Mood match: Score of 1.0 if moods match and 0.0 otherwise.
-- Energy closeness: Compute $1 - abs(song.energy - user.target_energy)$, so a song exactly at the user's target energy scores 1.0
+- Energy closeness: Compute 1 - abs(song.energy - user.target_energy), so a song exactly at the user's target energy scores 1.0
 - Acousticness match: Convert acoutsticness to a boolean based on value and compare to user's likes_acoutsticness
 
 Combination: Multiply each component by its weight and sum to final score between 0 and 1.
 - Weights: genre 0.35, energy 0.30, mood 0.25, acousticness 0.10
 
 Selection: Rank all songs by score descending and return the top k results.
-- Tie breaker: Use valence to decide the order if two songs are close to each other in score.
 
 Possible biases:
 - Genre Matching: Genres like "indie pop" and "pop" are treated as completely unrelated even though they are adjacent.
@@ -117,12 +116,24 @@ You can add more tests in `tests/test_recommender.py`.
 Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
 
 ```
-# e.g.:
-# User profile: genre=indie, mood=chill, energy=low
-# Recommendations:
-#   1. ...
-#   2. ...
-#   3. ...
+User profile: genre=pop, mood=happy, energy=0.8, likes_acoustic=False
+
+Top Recommendations
+========================================
+1. Sunrise City  (Score: 0.99)
+   Because: matches your favorite genre (pop), matches your favorite mood (happy), close to your target energy (0.82), matches your acoustic preference
+
+2. Gym Hero  (Score: 0.71)
+   Because: matches your favorite genre (pop), close to your target energy (0.93), matches your acoustic preference
+
+3. Rooftop Lights  (Score: 0.64)
+   Because: matches your favorite mood (happy), close to your target energy (0.76), matches your acoustic preference
+
+4. Night Drive Loop  (Score: 0.39)
+   Because: close to your target energy (0.75), matches your acoustic preference
+
+5. Concrete Pulse  (Score: 0.39)
+   Because: close to your target energy (0.85), matches your acoustic preference  
 ```
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
